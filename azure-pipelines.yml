@@ -1,0 +1,28 @@
+variables:
+  GIT_STRATEGY: clone
+  GIT_SUBMODULE_STRATEGY: recursive
+  PLATFORM: IOT2040B
+  DEPLOY_PACKAGE: images
+  ARCHIVE_DIR: /ArtifactPath/02-IOT2040B/01-CI-Builds
+
+stages:
+  - build
+  - package
+  - upload
+
+iot2040b-build:
+  stage: build
+  tags:
+    - IOT2000
+  script:
+    - ./kas-docker --isar clean
+    - ./kas-docker --isar --ssh-dir ${HOME}/.ssh build kas/iot2040b-example.yml
+iot2040b-package:
+  stage: package
+  script:
+    - tar -zcf I_`date +%y%m%d_%H%M`-${CI_COMMIT_SHA::8}.tar.gz $DEPLOY_PACKAGE
+
+iot2040b-package:
+  stage: upload
+  script:
+    - if [ -d $ARCHIVE_DIR ]; then cp I*.tar.gz $ARCHIVE_DIR;fi
